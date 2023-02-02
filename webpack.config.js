@@ -1,15 +1,15 @@
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-
 const isDevelopment = process.env.NODE_ENV === 'production';
 
 module.exports = {
     mode: isDevelopment ? 'development' : 'production',
     devtool: isDevelopment ? 'eval-source-map' : 'source-map',
     entry: path.resolve(__dirname, 'src', 'index.jsx'),
-    performance : {
-        hints : false
-    } ,
+    performance: {
+        hints: false
+    },
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js'
@@ -20,31 +20,39 @@ module.exports = {
     devServer: {
         static: {
             directory: path.join(__dirname, 'public'),
-          },
-          compress: true,
-          port: 9000,
+        },
+        hot: true,
+        port: 9000,
     },
-    plugins: [
-        new HtmlWebpackPlugin({
-           template: path.resolve(__dirname, 'public', 'index.html')
+    plugins: [isDevelopment && new ReactRefreshWebpackPlugin(),
+    new HtmlWebpackPlugin({
+        template: path.resolve(__dirname, 'public', 'index.html')
     })
-    ],
+
+    ].filter(Boolean),
     module: {
-       rules: [
-        {
-           test: /\.jsx$/,
-           exclude: /node_modules/,
-           use: 'babel-loader'
-       },
-       {
-        test: /\.css$/,
-        exclude: /node_modules/,
-        use: ['style-loader', 'css-loader']
-      }, {
-        test: /\.scss$/,
-        exclude: /node_modules/,
-        use: ['style-loader', 'css-loader', 'sass-loader']
-      }
-    ], 
-    }
+        rules: [
+            {
+                test: /\.[jt]sx?$/,
+                exclude: /node_modules/,
+                use: [
+                    {
+                        loader: require.resolve('babel-loader'),
+                        options: {
+                            plugins: [isDevelopment && require.resolve('react-refresh/babel')].filter(Boolean),
+                        },
+                    },
+                ],
+            },
+            {
+                test: /\.css$/,
+                exclude: /node_modules/,
+                use: ['style-loader', 'css-loader']
+            }, {
+                test: /\.scss$/,
+                exclude: /node_modules/,
+                use: ['style-loader', 'css-loader', 'sass-loader']
+            }
+        ],
+    },
 };
